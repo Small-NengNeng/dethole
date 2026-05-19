@@ -4,12 +4,14 @@
 
 > 上游 MMYOLO 原版说明见：[英文](docs/README_mmyolo_original_en.md) | [简体中文](docs/README_mmyolo_original_zh-CN.md)
 
+**代码仓库：** https://github.com/Small-NengNeng/dethole
+
 ## 功能概览
 
 | 内容 | 说明 |
 |------|------|
 | 检测类别 | `hole`（单类） |
-| 数据格式 | COCO JSON + `images/` 目录 |
+| 数据格式 | COCO JSON + `images/`（训练配置）；网盘提供 YOLO 格式压缩包 |
 | 主要模型 | YOLOv5-s（自定义 Anchor）、YOLOv8-s |
 | 图像分辨率 | 3840×2160（4K 帧） |
 
@@ -27,55 +29,44 @@ pip install -v -e .
 
 详细依赖与版本说明请参考 [MMYOLO 安装文档](https://mmyolo.readthedocs.io/en/latest/get_started/installation.html)。
 
-## 数据集结构
+## 数据集
 
-数据集独立于本仓库，默认放在 `holedet/oak/` 下（与训练机路径一致时可修改配置中的 `data_root`）。
+训练/验证数据 **不纳入 Git**，请从百度网盘下载并解压到本地：
 
-### 目录布局（以 `oak_datasetv2` 为例）
+| 项目 | 说明 |
+|------|------|
+| 文件名 | `real_trainval_yolo.7z` |
+| 链接 | https://pan.baidu.com/s/1x8ScM9siq7yv2JvgdL4mqg |
+| 提取码 | `8ar2` |
+
+建议解压路径：
 
 ```text
-oak_datasetv2/
-├── images/                 # 训练/验证/测试图片（如 frame_000483.jpg）
-├── annotations/
-│   ├── trainval.json       # 训练+验证，COCO 格式
-│   ├── test.json           # 测试集，COCO 格式
-│   └── result.json         # 可选：推理或导出结果
-└── labels/                 # 可选：YOLO 格式 txt，便于转换或检查
+E:/4070project/holedet/oak/real_trainval_yolo.7z   # 压缩包（下载后）
+E:/4070project/holedet/oak/<解压目录>/             # 解压后的数据集根目录
 ```
 
-### COCO 标注要点
-
-- `images[].file_name` 对应 `images/` 下的文件名。
-- `annotations` 中 `category_id` 为坑洞框；`metainfo` 中类别名为 `hole`。
-- 配置中通过 `data_prefix=dict(img='images/')` 指定图片子目录。
-
-### 数据集版本
-
-| 目录 | 说明 | 配置中默认用途 |
-|------|------|----------------|
-| `oak_datasetv1/` | 早期版本，578 张图 | `oak_hole.py`、`oak_hole_anchors.py` |
-| `oak_datasetv2/` | 修订版本，578 张图 | `oak_hole_anchors_v2.py`、`oak_yolov8_s_fast_1xb12-40e_hole.py` |
+解压后目录通常包含 `images/` 与 `labels/`（YOLO 标注）。若使用本仓库中的 COCO 格式配置训练，请将 `data_root` 指向含 `images/` 与 `annotations/trainval.json`、`annotations/test.json` 的目录，或先将 YOLO 标注转换为 COCO（参见 `holedet/oak` 下相关脚本）。
 
 ### 配置路径修改
 
-配置内 `data_root` 现为 Linux 训练机绝对路径，克隆到本机后请改为本地路径，例如：
+配置内 `data_root` 需改为本机解压后的数据集根目录，例如：
 
 ```python
-# Windows 示例
-data_root = 'E:/4070project/holedet/oak/oak_datasetv2/'
+data_root = 'E:/4070project/holedet/oak/real_trainval_yolo/'
 ```
 
 ## 配置文件说明
 
 所有坑洞相关配置位于 `configs/yolov5/` 与 `configs/yolov8/`。
 
-| 配置文件 | 基座模型 | 数据集 | 说明 |
-|----------|----------|--------|------|
-| `configs/yolov5/oak_hole.py` | YOLOv5-s | v1 | 小目标 Anchor，可 `load_from` 断点续训 |
-| `configs/yolov5/oak_hole_anchors.py` | YOLOv5-s | v1 | v1 上 K-Means 优化后的 Anchor |
-| `configs/yolov5/oak_hole_anchors_v2.py` | YOLOv5-s | v2 | v2 优化 Anchor（推荐 YOLOv5 实验） |
-| `configs/yolov5/yolov5_s-v61_fast_1xb12-40e_hole.py` | YOLOv5-s | `camera/` | 相机采集子集实验 |
-| `configs/yolov8/oak_yolov8_s_fast_1xb12-40e_hole.py` | YOLOv8-s | v2 | 关闭部分 heavy aug 的 fast 配置 |
+| 配置文件 | 基座模型 | 说明 |
+|----------|----------|------|
+| `configs/yolov5/oak_hole.py` | YOLOv5-s | 小目标 Anchor，可 `load_from` 断点续训 |
+| `configs/yolov5/oak_hole_anchors.py` | YOLOv5-s | K-Means 优化 Anchor |
+| `configs/yolov5/oak_hole_anchors_v2.py` | YOLOv5-s | 优化 Anchor（推荐 YOLOv5 实验） |
+| `configs/yolov5/yolov5_s-v61_fast_1xb12-40e_hole.py` | YOLOv5-s | 相机采集子集实验 |
+| `configs/yolov8/oak_yolov8_s_fast_1xb12-40e_hole.py` | YOLOv8-s | fast 训练配置 |
 
 ### Anchor 优化（YOLOv5）
 
@@ -94,7 +85,7 @@ python tools/analysis_tools/optimize_anchors.py \
 在项目根目录（含 `configs/` 的目录）执行：
 
 ```bash
-# 单卡训练（示例：YOLOv5 + v2）
+# 单卡训练（示例）
 python tools/train.py configs/yolov5/oak_hole_anchors_v2.py
 
 # 测试 / 评估
@@ -118,21 +109,21 @@ python demo/image_demo.py \
 
 ## 大文件与网盘资源
 
-以下内容 **不纳入 Git**，已打包或计划打包至 `E:\4070project\mmyolo\baidupan\`，上传百度网盘后请在 Issue / 文档中补充分享链接。
+以下内容 **不纳入 Git**，请从百度网盘获取：
 
-| 压缩包 | 内容 |
-|--------|------|
-| `mmyolo_work_dirs.tar.gz` | 训练权重、日志、`vis_data` 等 |
-| `oak_datasetv1.tar.gz` | 数据集 v1 |
-| `oak_datasetv2.tar.gz` | 数据集 v2 |
+| 资源 | 说明 |
+|------|------|
+| `real_trainval_yolo.7z` | 训练/验证数据集（[链接](https://pan.baidu.com/s/1x8ScM9siq7yv2JvgdL4mqg?pwd=8ar2)，提取码 `8ar2`） |
+| `mmyolo_work_dirs.tar.gz` | 预训练权重、训练日志与实验输出（[链接](https://pan.baidu.com/s/1VIYYhSidqYELLCOrKkracg?pwd=ue4p)，提取码 `ue4p`） |
 
-清单与解压说明见：[docs/BAIDU_PAN_ASSETS.md](docs/BAIDU_PAN_ASSETS.md)。
-
-本地打包可执行：
+下载 `mmyolo_work_dirs.tar.gz` 后解压示例：
 
 ```powershell
-.\scripts\pack_baidupan_assets.ps1
+# 假设压缩包保存在 baidupan 目录
+tar -xzf E:\4070project\mmyolo\baidupan\mmyolo_work_dirs.tar.gz -C E:\4070project\mmyolo\mmyolo
 ```
+
+更多说明见 [docs/BAIDU_PAN_ASSETS.md](docs/BAIDU_PAN_ASSETS.md)。
 
 ## 仓库结构（与本项目相关部分）
 
@@ -142,7 +133,7 @@ mmyolo/
 ├── configs/yolov8/          # OAK 坑洞 YOLOv8 配置
 ├── demo/                    # 推理脚本
 ├── docs/                    # 文档（含 MMYOLO 原版 README）
-├── scripts/                 # 辅助脚本（网盘打包等）
+├── scripts/                 # 辅助脚本
 ├── tools/                   # 训练 / 测试 / 分析工具
 ├── work_dirs/               # 本地实验输出（gitignore）
 └── vis_res/                 # 可视化结果（gitignore）
@@ -151,24 +142,6 @@ mmyolo/
 ## 引用
 
 若使用 MMYOLO，请引用 OpenMMLab 官方论文与仓库（见 [docs/README_mmyolo_original_en.md](docs/README_mmyolo_original_en.md) 中的 Citation 章节）。
-
-## 上传 GitHub
-
-本目录已重新 `git init`，大文件目录已由 `.gitignore` 排除。首次提交示例：
-
-```bash
-cd E:/4070project/mmyolo/mmyolo
-git add .
-git commit -m "feat: OAK hole detection configs and docs"
-git remote add origin https://github.com/<user>/<repo>.git
-git push -u origin main
-```
-
-若在 Windows 上遇到 `dubious ownership`，可对当前仓库单独放行（勿改全局配置时可省略，改用管理员或统一账户克隆）：
-
-```bash
-git config --global --add safe.directory E:/4070project/mmyolo/mmyolo
-```
 
 ## 许可证
 
