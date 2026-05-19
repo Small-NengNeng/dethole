@@ -99,6 +99,8 @@ python tools/analysis_tools/browse_dataset.py configs/yolov5/oak_hole_anchors_v2
 
 ### 推理演示
 
+**PyTorch（MMYOLO）：**
+
 ```bash
 python demo/image_demo.py \
   path/to/image.jpg \
@@ -106,6 +108,8 @@ python demo/image_demo.py \
   work_dirs/oak_hole_anchors_v2/best_coco_bbox_mAP_epoch_*.pth \
   --out-dir output/demo
 ```
+
+**OAK 相机 + ONNX 实时推理：** 见 [oak_demo/README.md](oak_demo/README.md)（`dethole_host.py`）。
 
 ## 大文件与网盘资源
 
@@ -131,6 +135,8 @@ tar -xzf E:\4070project\mmyolo\baidupan\mmyolo_work_dirs.tar.gz -C E:\4070projec
 mmyolo/
 ├── configs/yolov5/          # OAK 坑洞 YOLOv5 配置
 ├── configs/yolov8/          # OAK 坑洞 YOLOv8 配置
+├── no_learning_app/         # 无学习（传统图像）坑洞检测
+├── oak_demo/                # OAK 相机采集 + ONNX 实时/离线推理
 ├── demo/                    # 推理脚本
 ├── docs/                    # 文档（含 MMYOLO 原版 README）
 ├── scripts/                 # 辅助脚本

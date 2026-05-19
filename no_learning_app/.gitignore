@@ -1,0 +1,12 @@
+camera_vis/
+result/
+grey/
+img/
+mask/
+vis_mask/
+__pycache__/
+*.pyc
+*.jpg
+*.jpeg
+*.png
+*.bmp
